@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!-- saved from url=(0044)http://www.craigslist.org/about/localstorage -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+        <script type="text/javascript">
+            var baseDomain = window.location.hostname.split('.');
+            while (baseDomain.length && baseDomain[0] !== 'craigslist') {
+                baseDomain.shift();
+            }
+            baseDomain = baseDomain.join('.');
+            document.domain = baseDomain;
+            var ls = window.localStorage;
+            var CL = window.parent.CL;
+            var localStorageAvailable;
+
+            if (ls){
+                localStorageAvailable = (function(){
+                    // test to make sure localStorage is available and working
+                    try {
+                        var item = 'isLocalStorageAvailable';
+                        ls.setItem(item, 'a');
+                        if (ls.getItem(item) !== 'a'){
+                            throw new Error();
+                        }
+                        ls.removeItem(item);
+                        return true;
+                    } catch (e) {
+                        return false;
+                    }
+                }());
+            }
+
+            if (localStorageAvailable){
+                var safeLS = {
+                    getItem: function(key) { return ls.getItem(key); },
+                    removeItem: function(key) { return ls.removeItem(key); },
+                    setItem: function(key, value) {
+                        // catch localStorage save errors
+                        try {
+                            return ls.setItem(key, value);
+                        }
+                        catch (e) {}
+                    }
+                };
+
+                CL.when.localStorageAvailable.resolve(safeLS);
+            } else {
+                CL.when.localStorageAvailable.reject();
+            }
+        </script>
+    </head>
+    <body>
+
+</body></html>
