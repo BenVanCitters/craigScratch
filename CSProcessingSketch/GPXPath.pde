@@ -11,21 +11,19 @@ class GPXPath
   
   public void parseFile(String file)
   {
-    XMLElement day1 = new XMLElement(appletPtr, file);  
+    XML day1 = loadXML(file);  
     int numTrks = day1.getChildCount();
     //    day->trk->trkseg->trkpt->lat
-    XMLElement[] trks = day1.getChildren();
+    XML[] trks = day1.getChildren();
     
      for (int i = 0; i < numTrks; i++) 
     {
-   
-          float lat = trks[i].getFloat("lat");
-          float lon = trks[i].getFloat("lon");
-          float ele = trks[i].getFloat("cost");
-          String pid = trks[i].getString("pid");
-//          println(pid);
-maxPrice = max(maxPrice,ele);
-          ptList.add(new GPXTrkPt(lat,lon,ele));    
+      float lat = trks[i].getFloat("lat");
+      float lon = trks[i].getFloat("lon");
+      float ele = trks[i].getFloat("cost");
+      String pid = trks[i].getString("pid");
+      maxPrice = max(maxPrice,ele);
+      ptList.add(new GPXTrkPt(lat,lon,ele));    
     }
     maxPrice = 2000;
     println("maxPrice: " + maxPrice);
@@ -47,9 +45,9 @@ maxPrice = max(maxPrice,ele);
         double z = r * Math.cos(pt.lat*PI/180);
         translate((float)x,(float)y,(float)z);
 //        vertex(x,y,z);
-stroke(pt.ele*255/maxPrice,255,0);
-float radus = .5- pt.ele*.49/maxPrice;
-ellipse(0,0,radus,radus);
+        stroke(pt.ele*255/maxPrice,255,0);
+        float radus = .5- pt.ele*.49/maxPrice;
+        ellipse(0,0,radus,radus);
         popMatrix();
     }  
 //    endShape();

@@ -1,4 +1,5 @@
-  float globeRad;
+import java.util.*;
+float globeRad;
 float phiRot = .3420;//.1892;
 GPXPath path;
 void setup()
@@ -18,10 +19,10 @@ void draw()
   stroke(255);
 
   translate(width/2,height/2);
-  float zDist = -2247;//-mouseY*550.f/height;
+  float zDist = -2257;//+mouseY*550.f/height;
   translate(0,0,zDist);
-  float yRot = 0.3604167 + mouseX*.05/width;
-  phiRot =  .3810 - mouseY*.1f/height;
+  float yRot = 0.4304167 - mouseX*.05/width;
+  phiRot =  .3610 - mouseY*.03f/height;
   println("yRot: "+yRot + ", zDist: " + zDist + " phiRot: " + phiRot);  
   
   rotateX(phiRot+mid[0]);
