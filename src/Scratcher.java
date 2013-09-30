@@ -10,7 +10,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-
 public class Scratcher {
 	org.w3c.dom.Document mDoc;
 	org.w3c.dom.Element mRootElement;
@@ -33,8 +32,7 @@ public class Scratcher {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		saveXMLFile();
-		
+		saveXMLFile();		
 	}
 
 	public void parseCLPage(String url) throws IOException{
@@ -51,10 +49,8 @@ public class Scratcher {
         	File input = new File ("/Users/admin/Documents/workspace/craigScratch/craigslist page/site.html");
         	doc = Jsoup.parse(input, "UTF-8", "");
         }
-        parseCLPage(doc);
-		
-	}
-	
+        parseCLPage(doc);		
+	}	
 
 
 /* <p class="row" data-latitude="47.675818130271" data-longitude="-122.398223569797" data-pid="4051365390"> 
@@ -77,17 +73,40 @@ public class Scratcher {
  *  </span> 
  *  </p>
  */     
-	public void parseCLPage(Document doc) throws IOException{                        
-        		
+	public void parseCLPage(Document doc) throws IOException
+	{        		
 		Elements links = doc.select("p.row");
         print("\nLinks: (%d)", links.size());
+        java.util.Date date = null;
         for (Element link : links) {
+//        	java.util.Date time;
+        	java.text.DateFormat df = new java.text.SimpleDateFormat("MMM dd",java.util.Locale.ENGLISH);  
+//        	String timeStr = link.attr("data-pid");        				  
+				Elements dates = link.select("span.date");
+	            for (Element d : dates)
+	            {
+	            	String timeStr = d.text();
+	            	try{
+	            		date =  df.parse(timeStr);
+	            	}
+	    			catch(Exception e)
+	    			{
+	    				System.out.println(e + ", " + timeStr);
+	    			}
+//	            	timeStr = Float.parseFloat(txt1.substring(1, txt1.length()));
+	            	//print("txt: %f",cost);
+//	            	link.attr("data-latitude");
+	            }
+				
+				//ptList.add(new GPXTrkPt(lat,lon,ele,date));          
+			
         	float lat =0;
         	float lng = 0;
         	float cost = 0;
         	String pid = link.attr("data-pid");
         	String lattxt = link.attr("data-latitude");
         	String lngtxt = link.attr("data-longitude");
+        	//TODO get date 
         	if((lattxt != "")&&(lngtxt != ""))
         	{
         		lat = Float.parseFloat(lattxt);
@@ -106,31 +125,32 @@ public class Scratcher {
             	//print("txt: %f",cost);
 //            	link.attr("data-latitude");
             }
-            addListingXML( pid,lat,lng,cost);
+            addListingXML( pid,lat,lng,cost,date);
             print(" *%s lat,long: %f, %f price $%.2f", pid,lat,lng,cost);
         }
         
+        //TODO: launch next page on a new (non-blocking) thread
         String nextURL = null;
         Elements nxtSpans = doc.select("span.nplink");
-        for (Element nxtSpan : nxtSpans) {
+        for (Element nxtSpan : nxtSpans) 
+        {
         	Elements nxtLinks = nxtSpan.select("a[href]");
         	String title = nxtSpan.attr("title");
         	if(title.contains("next"))
         	{
-        		for (Element nxLnk : nxtLinks) {
+        		for (Element nxLnk : nxtLinks) 
+        		{
 	        		nextURL = nxLnk.attr("abs:href");
 	        		print(" * <%s>",nextURL);        		
                 	parseCLPage(Jsoup.connect(nextURL).get());
                 	return;
             	}
         	}
-        	
-        }
-        
+        }        
 		return; //we only need to follow one "next" link
 	}
 	
-	
+	//XML example code from http://www.mkyong.com/java/how-to-create-xml-file-in-java-dom/
 	private void createXMLDoc() throws ParserConfigurationException
 	{
 		javax.xml.parsers.DocumentBuilderFactory docFactory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
@@ -142,7 +162,7 @@ public class Scratcher {
 		mDoc.appendChild(mRootElement);
 	}
 	
-	private void addListingXML(String pid, float lat, float lon, float cost)
+	private void addListingXML(String pid, float lat, float lon, float cost, java.util.Date d)
 	{
 		org.w3c.dom.Element listing = mDoc.createElement("Listing");
 		mRootElement.appendChild(listing);
@@ -151,6 +171,10 @@ public class Scratcher {
 		listing.setAttribute("lat", Float.toString(lat));
 		listing.setAttribute("lon", Float.toString(lon));
 		listing.setAttribute("cost", Float.toString(cost));
+		if(d != null)
+		{
+			listing.setAttribute("date", d.toString());
+		}
 	}
 	private void saveXMLFile()
 	{
@@ -172,7 +196,6 @@ public class Scratcher {
  
 		// Output to console for testing
 		// StreamResult result = new StreamResult(System.out);
- 
 		try 
 		{
 			transformer.transform(source, result);
@@ -188,6 +211,5 @@ public class Scratcher {
 	
     private static void print(String msg, Object... args) {
         System.out.println(String.format(msg, args));
-    }
-	
+    }	
 }
