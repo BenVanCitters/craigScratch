@@ -1,5 +1,7 @@
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
@@ -18,8 +20,8 @@ public class Scratcher {
 	{
 		try {
 			createXMLDoc();
-		} catch (ParserConfigurationException e1) {
-			// TODO Auto-generated catch block
+		} catch (ParserConfigurationException e1) 
+		{
 			e1.printStackTrace();
 		}
 		
@@ -29,7 +31,6 @@ public class Scratcher {
 		}
 		catch (IOException e) 
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		saveXMLFile();		
@@ -88,6 +89,8 @@ public class Scratcher {
 	            	String timeStr = d.text();
 	            	try{
 	            		date =  df.parse(timeStr);
+	            		GregorianCalendar gregCal = new GregorianCalendar();
+	            		
 	            	}
 	    			catch(Exception e)
 	    			{
@@ -96,9 +99,7 @@ public class Scratcher {
 //	            	timeStr = Float.parseFloat(txt1.substring(1, txt1.length()));
 	            	//print("txt: %f",cost);
 //	            	link.attr("data-latitude");
-	            }
-				
-				//ptList.add(new GPXTrkPt(lat,lon,ele,date));          
+	            }      
 			
         	float lat =0;
         	float lng = 0;
@@ -106,7 +107,7 @@ public class Scratcher {
         	String pid = link.attr("data-pid");
         	String lattxt = link.attr("data-latitude");
         	String lngtxt = link.attr("data-longitude");
-        	//TODO get date 
+
         	if((lattxt != "")&&(lngtxt != ""))
         	{
         		lat = Float.parseFloat(lattxt);
@@ -176,6 +177,8 @@ public class Scratcher {
 			listing.setAttribute("date", d.toString());
 		}
 	}
+	
+	
 	private void saveXMLFile()
 	{
 		javax.xml.transform.TransformerFactory transformerFactory = 
@@ -212,4 +215,10 @@ public class Scratcher {
     private static void print(String msg, Object... args) {
         System.out.println(String.format(msg, args));
     }	
+    
+    private void openPreviousXML()
+    {
+    	
+    
+    }
 }
