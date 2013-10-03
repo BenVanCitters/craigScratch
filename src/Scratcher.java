@@ -76,6 +76,7 @@ public class Scratcher {
  */     
 	public void parseCLPage(Document doc) throws IOException
 	{        		
+		GregorianCalendar gregCalNow = new GregorianCalendar();
 		Elements links = doc.select("p.row");
         print("\nLinks: (%d)", links.size());
         java.util.Date date = null;
@@ -89,8 +90,11 @@ public class Scratcher {
 	            	String timeStr = d.text();
 	            	try{
 	            		date =  df.parse(timeStr);
-	            		GregorianCalendar gregCal = new GregorianCalendar();
 	            		
+	            		GregorianCalendar gregCal = new GregorianCalendar();
+	            		gregCal.setTime(date);
+	            		gregCal.set(Calendar.YEAR, gregCalNow.get(Calendar.YEAR));
+	            		date = gregCal.getTime();
 	            	}
 	    			catch(Exception e)
 	    			{
