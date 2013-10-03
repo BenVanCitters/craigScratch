@@ -1,12 +1,16 @@
 import java.util.*;
+import org.processing.wiki.triangulate.*;
+
 float globeRad;
 float phiRot = .3420;//.1892;
-GPXPath path;
+RentField path;
+
+
 void setup()
 {
   size(1200,700,P3D);
   globeRad = height*4.f;
-  path = new GPXPath(this);
+  path = new RentField(this);
   path.parseFile("file.xml");
 }
 
@@ -41,7 +45,7 @@ void draw()
   }
   popMatrix();
 
-  path.draw();
+  path.draw2();
 }
 void vertex(double x, double y, double z) {
   vertex((float)x,(float)y,(float)z); 

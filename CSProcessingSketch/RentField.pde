@@ -1,9 +1,10 @@
-class GPXPath
+class RentField
 {
+  ArrayList triangles = new ArrayList();
   float maxPrice = 0;
   ArrayList<GPXTrkPt> ptList;
   PApplet appletPtr;
-  public GPXPath(PApplet app)
+  public RentField(PApplet app)
   {
     appletPtr = app;
     ptList = new ArrayList<GPXTrkPt>();    
@@ -28,6 +29,7 @@ class GPXPath
     maxPrice = 2000;
     println("maxPrice: " + maxPrice);
     println("ptList.size(): " + ptList.size());
+    triangulate();
   }
   
   public void draw()
@@ -53,6 +55,20 @@ class GPXPath
 //    endShape();
   }
   
+  void draw2()
+  {
+    stroke(255);
+    beginShape(TRIANGLES);
+   for (int i = 0; i < triangles.size(); i++) 
+    {
+      Triangle t = (Triangle)triangles.get(i);
+      vertex(t.p1.x, t.p1.y);
+      vertex(t.p2.x, t.p2.y);
+      vertex(t.p3.x, t.p3.y);
+    }  
+    endShape();
+  }
+  
   //returns 'averaged' values from all points in the list
   public float[] getMidPt()
   {
@@ -67,5 +83,20 @@ class GPXPath
     int count = ptList.size();
     mid[0] /= count; mid[1] /= count; mid[2] /= count; mid[3] /= count;
     return mid;
+  }
+  
+  void triangulate()
+  {
+    ArrayList points = new ArrayList();
+    for(GPXTrkPt pt : ptList)
+    {
+      PVector p = new PVector(pt.lat, pt.lon);
+      points.add(p);
+    }
+  
+    // get the triangulated mesh
+    triangles = Triangulate.triangulate(points); 
+   
+    
   }
 }
