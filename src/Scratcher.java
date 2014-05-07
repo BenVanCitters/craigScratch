@@ -15,7 +15,8 @@ import org.jsoup.select.Elements;
 public class Scratcher {
 	org.w3c.dom.Document mDoc;
 	org.w3c.dom.Element mRootElement;
-	
+	private static int pageTimeoutMilliseconds = 5000;
+	private int mItemCount = 0;
 	public Scratcher(String url)
 	{
 		try {
@@ -73,37 +74,67 @@ public class Scratcher {
  *    </span>  
  *  </span> 
  *  </p>
+ *  
+ *  //5-6-2014
+ *  <h4 class="ban">
+ *    <span class="bantext">Tue May 06</span>
+ *  </h4>
+    <p class="row" data-pid="4457344516"> 
+      <a href="/skc/apa/4457344516.html" class="i" data-id="0:01111_9EOU1bTJ5pU"></a> 
+      <span class="star"></span> 
+      <span class="pl"> 
+        <span class="date">May  6</span>  
+        <a href="/skc/apa/4457344516.html">DO YOU HAVE BAD OR NO CREDIT??</a> 
+      </span> 
+      <span class="l2">  
+        <span class="price">&#x0024;675</span> 
+        / 1br -
+        <span class="pnr"> 
+          <small> (AUBURN)</small> 
+          <span class="px"> 
+            <span class="p"> pic&nbsp;
+              <span class="maptag" data-pid="4457344516">map</span>
+            </span>
+          </span> 
+        </span>  
+        <a class="gc" href="/apa/" data-cat="apa">apts/housing for rent</a> 
+      </span> 
+    </p>
+ *  
  */     
 	public void parseCLPage(Document doc) throws IOException
 	{        		
 		GregorianCalendar gregCalNow = new GregorianCalendar();
 		Elements links = doc.select("p.row");
+		if(links.size() < 1)
+			return;
         print("\nLinks: (%d)", links.size());
         java.util.Date date = null;
         for (Element link : links) {
 //        	java.util.Date time;
         	java.text.DateFormat df = new java.text.SimpleDateFormat("MMM dd",java.util.Locale.ENGLISH);  
 //        	String timeStr = link.attr("data-pid");        				  
-				Elements dates = link.select("span.date");
-	            for (Element d : dates)
-	            {
-	            	String timeStr = d.text();
-	            	try{
-	            		date =  df.parse(timeStr);
-	            		
-	            		GregorianCalendar gregCal = new GregorianCalendar();
-	            		gregCal.setTime(date);
-	            		gregCal.set(Calendar.YEAR, gregCalNow.get(Calendar.YEAR));
-	            		date = gregCal.getTime();
-	            	}
-	    			catch(Exception e)
-	    			{
-	    				System.out.println(e + ", " + timeStr);
-	    			}
+			Elements dates = link.select("span.date");
+			
+            for (Element d : dates)
+            {
+            	String timeStr = d.text();
+            	try{
+            		date =  df.parse(timeStr);
+            		
+            		GregorianCalendar gregCal = new GregorianCalendar();
+            		gregCal.setTime(date);
+            		gregCal.set(Calendar.YEAR, gregCalNow.get(Calendar.YEAR));
+            		date = gregCal.getTime();
+            	}
+    			catch(Exception e)
+    			{
+    				System.out.println(e + ", " + timeStr);
+    			}
 //	            	timeStr = Float.parseFloat(txt1.substring(1, txt1.length()));
-	            	//print("txt: %f",cost);
+            	//print("txt: %f",cost);
 //	            	link.attr("data-latitude");
-	            }      
+            }      
 			
         	float lat =0;
         	float lng = 0;
@@ -112,16 +143,48 @@ public class Scratcher {
         	String lattxt = link.attr("data-latitude");
         	String lngtxt = link.attr("data-longitude");
 
-        	if((lattxt != "")&&(lngtxt != ""))
-        	{
-        		lat = Float.parseFloat(lattxt);
-        		lng = Float.parseFloat(lngtxt);
-        	}
-        	else
-        	{
+
+    		Elements item = link.select("a.i");
+        	String itemURL = item.attr("abs:href");
+        	boolean foundURL = false;
+        	try
+            {
+            	/* <div class="mapAndAttrs">
+    			     <div class="mapbox">
+                       <div id="map" class="viewposting" data-latitude="47.297522" data-longitude="-122.212730"></div>
+                       <div class="mapaddress">M Street SE at 12th Street SE</div>
+                       <p class="mapaddress">
+                         <small> (<a target="_blank" href="https://maps.google.com/?q=loc%3A+M+Street+SE+at+%31%32th+Street+SE+Auburn+WA+US">google map</a>)(<a target="_blank" href="http://maps.yahoo.com/maps_result?addr=M+Street+SE+at+%31%32th+Street+SE&amp;csz=Auburn+WA&amp;country=US">yahoo map</a>)</small>
+                       </p>
+                     </div>
+                */
+        		Document GPSdoc;
+//            	print("Fetching %s...", itemURL);
+            	GPSdoc = Jsoup.connect(itemURL).get();
+            	Elements gpsElem = GPSdoc.select("div.viewposting");
+            	lattxt = gpsElem.attr("data-latitude");
+            	lngtxt = gpsElem.attr("data-longitude");
+            	if((lattxt != "")&&(lngtxt != ""))
+            	{
+            		lat = Float.parseFloat(lattxt);
+            		lng = Float.parseFloat(lngtxt);
+            		foundURL = true;
+//            		System.out.println("lat+long("+lat+","+lng+")");
+            	}
+            	else
+            	{
+            		System.out.println("didn't get lat & lon!");
+            	}
+            }
+            catch(Exception e)
+            {        	
+            	System.out.println("exception caught! - couldn't open " + itemURL);
+            	System.out.println(e);                		                	
+            }
+        	//if we don't get the gps, I don't care; continue on to other entries
+        	if(!foundURL)
         		continue;
-        	}
-            
+        	
             Elements price = link.select("span.price");
             for (Element p : price)
             {
@@ -130,26 +193,35 @@ public class Scratcher {
             	//print("txt: %f",cost);
 //            	link.attr("data-latitude");
             }
+            mItemCount++;
             addListingXML( pid,lat,lng,cost,date);
-            print(" *%s lat,long: %f, %f price $%.2f", pid,lat,lng,cost);
+            print("%d *%s lat,long: %f, %f price $%.2f", mItemCount, pid,lat,lng,cost);
         }
         
         //TODO: launch next page on a new (non-blocking) thread
+        //old html
+        //<span class="nplink next" title="next page">
+        //  <a href="http://seattle.craigslist.org/search/apa?s=100&minAsk=1">
+        //	  <span class="nplabel">next</span>
+        //    &gt;
+        //  </a>
+        //</span>
+
+        //(5-6-2014)
+        //<a href='/hhh/index100.html' class="button next" title="next page"> next &gt; </a>
         String nextURL = null;
-        Elements nxtSpans = doc.select("span.nplink");
+        Elements nxtSpans = doc.select("a.button");
         for (Element nxtSpan : nxtSpans) 
         {
         	Elements nxtLinks = nxtSpan.select("a[href]");
         	String title = nxtSpan.attr("title");
         	if(title.contains("next"))
         	{
-        		for (Element nxLnk : nxtLinks) 
-        		{
-	        		nextURL = nxLnk.attr("abs:href");
-	        		print(" * <%s>",nextURL);        		
-                	parseCLPage(Jsoup.connect(nextURL).get());
-                	return;
-            	}
+        		nextURL = nxtSpan.attr("abs:href");
+        		print(" * <%s>",nextURL);        	
+        		Document nextPage = Jsoup.connect(nextURL).timeout(pageTimeoutMilliseconds).get();
+            	parseCLPage(nextPage);
+            	return;
         	}
         }        
 		return; //we only need to follow one "next" link

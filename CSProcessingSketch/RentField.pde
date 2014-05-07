@@ -23,17 +23,21 @@ class RentField
       float lon = trks[i].getFloat("lon");
       float ele = trks[i].getFloat("cost");
       String pid = trks[i].getString("pid");
+      if(ele < 10000) //restrict displayed items to rent which is probably under 10k a month
+      {
       maxPrice = max(maxPrice,ele);
-      ptList.add(new GPXTrkPt(lat,lon,ele));    
+      ptList.add(new GPXTrkPt(lat,lon,ele));
+      }    
     }
     maxPrice = 2000;
     println("maxPrice: " + maxPrice);
     println("ptList.size(): " + ptList.size());
-    triangulate();
+//    triangulate();
   }
   
   public void draw()
   {
+
     stroke(255);
     noFill();
 //    beginShape();
@@ -49,10 +53,35 @@ class RentField
 //        vertex(x,y,z);
         stroke(pt.ele*255/maxPrice,255,0);
         float radus = .5- pt.ele*.49/maxPrice;
-        ellipse(0,0,radus,radus);
+        ellipse(0,0,.1,.1);
         popMatrix();
     }  
 //    endShape();
+        
+        float r = globeRad * (0 + 6367.47000) / 6367.47000;
+        float lat = 47.6117555;
+        float lon = -122.3355414;//draw seattle ellipse
+//        float r = globeRad * (pt.ele*10/maxPrice + 6367.47000) / 6367.47000;
+        double x = r * Math.sin(lat*PI/180) * Math.cos(lon*PI/180);
+        double y = r * Math.sin(lat*PI/180) * Math.sin(lon*PI/180);
+        double z = r * Math.cos(lat*PI/180);
+        pushMatrix();
+        translate((float)x,(float)y,(float)z);
+//        vertex(x,y,z);
+        stroke(255);
+        ellipse(0,0,1.5,1.5);
+        popMatrix();
+        pushMatrix();
+        lat = 47.9489308;
+        lon = -122.3065187;//mukilteo 47.9489308,-122.3065187
+        x = r * Math.sin(lat*PI/180) * Math.cos(lon*PI/180);
+        y = r * Math.sin(lat*PI/180) * Math.sin(lon*PI/180);
+        translate((float)x,(float)y,(float)z);
+//        vertex(x,y,z);
+        stroke(0,0,255);
+        ellipse(0,0,1.5,1.5);
+        popMatrix();
+//        ,
   }
   
   void draw2()

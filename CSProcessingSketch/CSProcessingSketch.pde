@@ -11,22 +11,25 @@ void setup()
   size(1200,700,P3D);
   globeRad = height*4.f;
   path = new RentField(this);
-  path.parseFile("file.xml");
+  path.parseFile("file (2).xml");
 }
 
 void draw()
 {
   background(0);
+      float cameraZ = ((height/2.0) / tan(PI*60.0/360.0));
+    perspective(PI/8.0, width/height, .0001, cameraZ*10.0);
+    
   float[] mid = path.getMidPt();
 //  mid[0] = .344198;
   noFill();
   stroke(255);
 
   translate(width/2,height/2);
-  float zDist = -2287;//+mouseY*550.f/height;
+  float zDist = -2270;//+mouseY*550.f/height;
   translate(0,0,zDist);
-  float yRot = 0.3604167 - mouseX*.05/width;
-  phiRot =  .3010 - mouseY*.03f/height;
+  float yRot = 0.4404167 - mouseX*.05/width;
+  phiRot =  .4110 - mouseY*.03f/height;
   println("yRot: "+yRot + ", zDist: " + zDist + " phiRot: " + phiRot);  
   
   rotateX(phiRot+mid[0]);
@@ -45,7 +48,7 @@ void draw()
   }
   popMatrix();
 
-  path.draw2();
+  path.draw();
 }
 void vertex(double x, double y, double z) {
   vertex((float)x,(float)y,(float)z); 
